@@ -23,4 +23,3 @@
 ## 📝 라이센스
 
 MIT License
-# vibe-vista-coding-assistant
