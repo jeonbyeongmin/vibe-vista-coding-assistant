@@ -1,0 +1,36 @@
+{
+  "name": "vibevista-bot",
+  "version": "1.0.0",
+  "description": "디스코드봇 - 재미있는 코딩 아이디어를 제공하는 VibeVistaBot",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "coding",
+    "ideas",
+    "gemini"
+  ],
+  "author": "jeonbyeongmin",
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.33",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint": "^9.16.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
