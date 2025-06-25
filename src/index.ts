@@ -9,7 +9,7 @@ import {
 } from 'discord.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
-import { generatePrompt } from './prompts.js';
+import { generatePrompt } from './prompts';
 import process from 'process';
 import console from 'console';
 import { setTimeout } from 'timers';
