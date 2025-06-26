@@ -5,10 +5,24 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "dev:test": "NODE_ENV=test tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:dev": "NODE_ENV=development node dist/index.js",
+    "start:test": "npm run build && NODE_ENV=development node dist/index.js",
+    "start:testbot": "npm run build && node -r dotenv/config dist/index.js dotenv_config_path=.env.test",
+    "stop": "pkill -f 'node dist/index.js' || echo 'No running bot found'",
+    "restart": "npm run stop && sleep 1 && npm run start:test",
+    "restart:testbot": "npm run stop && sleep 1 && npm run start:testbot",
     "lint": "eslint src --ext .ts",
-    "format": "prettier --write src/**/*.ts"
+    "format": "prettier --write src/**/*.ts",
+    "test": "./test.sh",
+    "test:features": "./test-features.sh",
+    "test:news": "node -e \"const ns = require('./dist/newsScheduler'); console.log('뉴스 기능 테스트 완료')\"",
+    "test:build": "npm run build && npm run test:features",
+    "test:local": "npm run start:testbot",
+    "test:all": "npm run test:features && npm run test:local",
+    "precommit": "npm run lint && npm run test:features"
   },
   "keywords": [
     "discord",
@@ -21,8 +35,11 @@
   "license": "MIT",
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
+    "@types/node-cron": "^3.0.11",
+    "axios": "^1.10.0",
     "discord.js": "^14.16.3",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "node-cron": "^4.1.1"
   },
   "devDependencies": {
     "@types/node": "^22.15.33",

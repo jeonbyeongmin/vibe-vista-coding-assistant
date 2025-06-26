@@ -6,6 +6,8 @@ import {
   Routes,
   SlashCommandStringOption,
   Interaction,
+  PermissionFlagsBits,
+  ChannelType,
 } from 'discord.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
@@ -13,6 +15,7 @@ import { generatePrompt } from './prompts';
 import process from 'process';
 import console from 'console';
 import { setTimeout } from 'timers';
+import { NewsScheduler } from './newsScheduler';
 
 dotenv.config();
 
@@ -25,6 +28,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 // 여러 모델을 fallback으로 사용 (최신 모델부터 시도)
 const modelNames = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 const models = modelNames.map((name) => genAI.getGenerativeModel({ model: name }));
+
+// 뉴스 스케줄러 초기화
+let newsScheduler: NewsScheduler;
 
 // 슬래시 명령어 정의
 const vibeIdeaCommand = new SlashCommandBuilder()
@@ -86,6 +92,19 @@ const vibeIdeaCommand = new SlashCommandBuilder()
       )
   );
 
+// 뉴스 설정 명령어
+const newsSetupCommand = new SlashCommandBuilder()
+  .setName('setnews')
+  .setDescription('개발 뉴스 알림을 설정합니다')
+  .addChannelOption((option) =>
+    option
+      .setName('채널')
+      .setDescription('뉴스를 받을 채널을 선택하세요')
+      .setRequired(true)
+      .addChannelTypes(ChannelType.GuildText)
+  )
+  .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels);
+
 // 아이디어 생성 함수 (fallback 지원)
 async function generateIdea(field: string, difficulty: string, timeLimit: string): Promise<string> {
   const prompt = generatePrompt({ field, difficulty, timeLimit });
@@ -103,10 +122,10 @@ async function generateIdea(field: string, difficulty: string, timeLimit: string
     try {
       console.log(`🤖 ${modelName} 모델로 아이디어 생성 중...`);
 
-      // 타임아웃과 함께 API 호출
+      // 타임아웃과 함께 API 호출 (15초로 단축)
       const result = await Promise.race([
         model.generateContent(prompt),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 25000)),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000)),
       ]);
 
       const response = await result.response;
@@ -160,6 +179,10 @@ async function generateIdea(field: string, difficulty: string, timeLimit: string
 client.once('ready', async () => {
   console.log(`✅ ${client.user?.tag}으로 로그인했습니다!`);
   console.log('🎯 VibeVistaBot이 준비되었습니다!');
+
+  // 뉴스 스케줄러 초기화 및 시작
+  newsScheduler = new NewsScheduler(client, models, modelNames);
+  newsScheduler.startScheduler();
 
   // 슬래시 명령어 등록
   await registerCommands();
@@ -216,6 +239,117 @@ client.on('interactionCreate', async (interaction: Interaction) => {
       }
     }
   }
+
+  // 뉴스 설정 명령어 처리
+  else if (interaction.commandName === 'setnews') {
+    try {
+      // 즉시 응답 처리
+      await interaction.deferReply({ ephemeral: true });
+
+      const channel = interaction.options.getChannel('채널');
+
+      if (!channel || channel.type !== ChannelType.GuildText) {
+        return await interaction.editReply({
+          content: '❌ 텍스트 채널만 선택할 수 있습니다.',
+        });
+      }
+
+      // 뉴스 채널 설정
+      newsScheduler.setNewsChannel(interaction.guildId!, channel.id);
+
+      await interaction.editReply({
+        content: `✅ <#${channel.id}>에서 개발 뉴스 알림이 설정되었습니다!\n📅 매일 오전 9시에 최신 개발 소식을 전해드립니다.\n📊 매주 월요일 오전 10시에 GitHub 트렌드를 전해드립니다.`,
+      });
+    } catch (error) {
+      console.error('뉴스 설정 오류:', error);
+      try {
+        if (interaction.deferred) {
+          await interaction.editReply({
+            content: '❌ 뉴스 채널 설정 중 오류가 발생했습니다.',
+          });
+        } else {
+          await interaction.reply({
+            content: '❌ 뉴스 채널 설정 중 오류가 발생했습니다.',
+            ephemeral: true,
+          });
+        }
+      } catch (replyError) {
+        console.error('응답 실패:', replyError);
+      }
+    }
+  }
+
+  // 수동 뉴스 명령어 처리
+  else if (interaction.commandName === 'news') {
+    try {
+      await interaction.deferReply();
+
+      console.log('📰 수동 뉴스 요청 시작...');
+      const success = await newsScheduler.sendTestNews();
+
+      if (success) {
+        await interaction.editReply({
+          content: '✅ 최신 개발 뉴스를 전송했습니다! 설정된 뉴스 채널을 확인해보세요.',
+        });
+      } else {
+        await interaction.editReply({
+          content: '❌ 뉴스를 가져오는데 실패했습니다. 잠시 후 다시 시도해주세요.',
+        });
+      }
+    } catch (error) {
+      console.error('뉴스 명령어 오류:', error);
+      try {
+        if (interaction.deferred) {
+          await interaction.editReply({
+            content: '❌ 뉴스 전송 중 오류가 발생했습니다.',
+          });
+        } else {
+          await interaction.reply({
+            content: '❌ 뉴스 전송 중 오류가 발생했습니다.',
+            ephemeral: true,
+          });
+        }
+      } catch (replyError) {
+        console.error('응답 실패:', replyError);
+      }
+    }
+  }
+
+  // 트렌드 명령어 처리
+  else if (interaction.commandName === 'trends') {
+    try {
+      await interaction.deferReply();
+
+      console.log('📊 트렌드 요청 시작...');
+      const success = await newsScheduler.sendTestTrends();
+
+      if (success) {
+        await interaction.editReply({
+          content: '✅ GitHub 트렌딩 레포지토리를 전송했습니다! 설정된 뉴스 채널을 확인해보세요.',
+        });
+      } else {
+        await interaction.editReply({
+          content: '❌ 트렌드 데이터를 가져오는데 실패했습니다. 잠시 후 다시 시도해주세요.',
+        });
+      }
+    } catch (error) {
+      console.error('트렌드 명령어 오류:', error);
+      try {
+        if (interaction.deferred) {
+          await interaction.editReply({
+            content: '❌ 트렌드 전송 중 오류가 발생했습니다.',
+          });
+        } else {
+          await interaction.reply({
+            content: '❌ 트렌드 전송 중 오류가 발생했습니다.',
+            ephemeral: true,
+          });
+        }
+      } catch (replyError) {
+        console.error('응답 실패:', replyError);
+      }
+    }
+  }
 });
 
 // 슬래시 명령어 등록
@@ -227,12 +361,15 @@ async function registerCommands() {
 
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
 
+    const commands = [vibeIdeaCommand.toJSON(), newsSetupCommand.toJSON()];
+
     const result = await rest.put(Routes.applicationCommands(client.user!.id), {
-      body: [vibeIdeaCommand.toJSON()],
+      body: commands,
     });
 
     console.log('✅ 슬래시 명령어가 성공적으로 등록되었습니다!');
     console.log('등록된 명령어 수:', Array.isArray(result) ? result.length : 'Unknown');
+    console.log('등록된 명령어:', commands.map((cmd) => cmd.name).join(', '));
   } catch (error) {
     console.error('슬래시 명령어 등록 오류:', error);
   }
