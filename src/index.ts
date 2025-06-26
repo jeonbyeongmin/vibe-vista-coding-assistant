@@ -48,11 +48,28 @@ const vibeIdeaCommand = new SlashCommandBuilder()
       .setDescription('코딩 분야를 선택하세요')
       .setRequired(false)
       .addChoices(
-        { name: '웹', value: '웹' },
-        { name: 'CLI', value: 'CLI' },
-        { name: 'AI', value: 'AI' },
-        { name: '유틸', value: '유틸' },
-        { name: '게임', value: '게임' },
+        { name: '웹 개발', value: '웹' },
+        { name: '모바일 앱', value: '모바일' },
+        { name: 'CLI/터미널', value: 'CLI' },
+        { name: 'AI/머신러닝', value: 'AI' },
+        { name: '데스크톱 앱', value: '데스크톱' },
+        { name: '게임 개발', value: '게임' },
+        { name: '유틸리티', value: '유틸' },
+        { name: '데이터 분석', value: '데이터' },
+        { name: 'API/백엔드', value: 'API' },
+        { name: '자동화/스크립트', value: '자동화' },
+        { name: '블록체인/Web3', value: '블록체인' },
+        { name: 'IoT/하드웨어', value: 'IoT' },
+        { name: '보안/해킹', value: '보안' },
+        { name: '네트워킹', value: '네트워크' },
+        { name: '데이터베이스', value: '데이터베이스' },
+        { name: '개발도구', value: '개발도구' },
+        { name: '알고리즘/수학', value: '알고리즘' },
+        { name: '크롤링/스크래핑', value: '크롤링' },
+        { name: '음성/오디오', value: '오디오' },
+        { name: '이미지/그래픽', value: '이미지' },
+        { name: '실시간/채팅', value: '실시간' },
+        { name: '교육/학습', value: '교육' },
         { name: '기타', value: '기타' }
       )
   )
