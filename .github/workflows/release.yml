@@ -34,52 +34,28 @@ jobs:
           TAG_NAME="${{ steps.tag.outputs.tag }}"
           PREV_TAG="${{ steps.prev_tag.outputs.prev_tag }}"
 
-          echo "📋 **VibeVistaBot $TAG_NAME 릴리즈**" > release_notes.md
           echo "" >> release_notes.md
-          echo "## 🎉 새로운 기능 및 개선사항" >> release_notes.md
+          echo "### 🎉 새로운 기능 및 개선사항" >> release_notes.md
           echo "" >> release_notes.md
 
           # 이전 태그가 있으면 그 사이의 커밋들을 분석
           if [ -n "$PREV_TAG" ]; then
-            echo "### 📝 변경 사항 ($PREV_TAG → $TAG_NAME)" >> release_notes.md
+            echo "#### 📝 변경 사항 ($PREV_TAG → $TAG_NAME)" >> release_notes.md
             echo "" >> release_notes.md
             
             # 커밋 메시지를 분석하여 릴리즈 노트 생성
             git log $PREV_TAG..HEAD --pretty=format:"- %s" --no-merges | while read line; do
               # 커밋 메시지에 따라 이모지 추가
-              if [[ $line == *"feat"* || $line == *"feature"* || $line == *"add"* ]]; then
-                echo "✨ $line" >> release_notes.md
-              elif [[ $line == *"fix"* || $line == *"bug"* ]]; then
-                echo "🐛 $line" >> release_notes.md
-              elif [[ $line == *"refactor"* || $line == *"refact"* ]]; then
-                echo "♻️ $line" >> release_notes.md
-              elif [[ $line == *"perf"* || $line == *"performance"* ]]; then
-                echo "⚡ $line" >> release_notes.md
-              elif [[ $line == *"docs"* || $line == *"doc"* ]]; then
-                echo "📚 $line" >> release_notes.md
-              elif [[ $line == *"style"* || $line == *"format"* ]]; then
-                echo "💄 $line" >> release_notes.md
-              elif [[ $line == *"test"* ]]; then
-                echo "🧪 $line" >> release_notes.md
-              elif [[ $line == *"chore"* || $line == *"update"* ]]; then
-                echo "🔧 $line" >> release_notes.md
-              else
-                echo "📄 $line" >> release_notes.md
-              fi
+              echo "$line" >> release_notes.md
             done
           else
-            echo "### 🎯 초기 릴리즈" >> release_notes.md
+            echo "#### 🎯 초기 릴리즈" >> release_notes.md
             echo "" >> release_notes.md
-            echo "✨ VibeVistaBot의 첫 번째 릴리즈입니다!" >> release_notes.md
             echo "- 🤖 AI 기반 코딩 아이디어 생성" >> release_notes.md
             echo "- 🎯 다양한 난이도 및 분야 선택" >> release_notes.md
             echo "- ⏱️ 제한시간 옵션 제공" >> release_notes.md
             echo "- 🔄 다중 AI 모델 fallback 지원" >> release_notes.md
           fi
-
-          echo "---" >> release_notes.md
-          echo "📅 **릴리즈 날짜**: $(date '+%Y년 %m월 %d일')" >> release_notes.md
-          echo "🏷️ **버전**: $TAG_NAME" >> release_notes.md
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
