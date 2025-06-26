@@ -2,7 +2,7 @@ import { Client, EmbedBuilder, TextChannel } from 'discord.js';
 import * as cron from 'node-cron';
 import axios from 'axios';
 import console from 'console';
-import { setTimeout } from 'timers';
+import { AIService } from './AIService';
 
 interface NewsArticle {
   title: string;
@@ -29,15 +29,12 @@ interface GitHubRepo {
 
 export class NewsScheduler {
   private client: Client;
-  private models: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  private modelNames: string[];
+  private aiService: AIService;
   private newsChannels: Map<string, string> = new Map();
 
-  constructor(client: Client, models: any[], modelNames: string[]) {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
+  constructor(client: Client, aiService: AIService) {
     this.client = client;
-    this.models = models;
-    this.modelNames = modelNames;
+    this.aiService = aiService;
   }
 
   startScheduler() {
@@ -211,47 +208,11 @@ export class NewsScheduler {
   }
 
   private async generateKoreanSummary(article: NewsArticle): Promise<string> {
-    const prompt = `다음 개발 관련 영문 기사를 한국어로 요약해주세요. 요약은 2-3문장으로 간결하게 작성하고, 개발자들이 관심있어할 핵심 내용을 포함해주세요.
-
-제목: ${article.title}
-내용: ${article.description}
-태그: ${article.tag_list.join(', ')}
-
-요약 형식:
-- 핵심 내용을 2-3문장으로 요약
-- 개발자 관점에서 중요한 포인트 강조
-- 친근하고 이해하기 쉬운 한국어로 작성`;
-
-    // 기존의 fallback 시스템 사용
-    for (let i = 0; i < this.models.length; i++) {
-      const model = this.models[i];
-      const modelName = this.modelNames[i];
-
-      try {
-        console.log(`🤖 ${modelName} 모델로 요약 생성 중...`);
-
-        const result = await Promise.race([
-          model.generateContent(prompt),
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000)),
-        ]);
-
-        const response = await result.response;
-        const summary = response.text();
-
-        console.log(`✅ ${modelName} 모델로 요약 생성 완료`);
-        return summary.trim();
-      } catch (error) {
-        console.error(`❌ ${modelName} 모델 요약 오류:`, error);
-
-        if (i < this.models.length - 1) {
-          console.log(`🔄 다음 모델 ${this.modelNames[i + 1]}로 재시도...`);
-          continue;
-        }
-      }
-    }
-
-    // 모든 모델이 실패한 경우 원본 설명 반환
-    return article.description || '요약을 생성할 수 없습니다.';
+    return await this.aiService.generateNewsSummary({
+      title: article.title,
+      description: article.description,
+      tag_list: article.tag_list,
+    });
   }
 
   private async broadcastToChannels(embed: EmbedBuilder) {
@@ -285,27 +246,5 @@ export class NewsScheduler {
 
   getNewsChannels(): Map<string, string> {
     return this.newsChannels;
-  }
-
-  // 테스트용 수동 뉴스 전송
-  async sendTestNews(): Promise<boolean> {
-    try {
-      await this.sendDailyNews();
-      return true;
-    } catch (error) {
-      console.error('❌ 테스트 뉴스 전송 실패:', error);
-      return false;
-    }
-  }
-
-  // 테스트용 수동 트렌드 전송
-  async sendTestTrends(): Promise<boolean> {
-    try {
-      await this.sendWeeklyTrends();
-      return true;
-    } catch (error) {
-      console.error('❌ 테스트 트렌드 전송 실패:', error);
-      return false;
-    }
   }
 }
