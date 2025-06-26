@@ -34,10 +34,6 @@ jobs:
           TAG_NAME="${{ steps.tag.outputs.tag }}"
           PREV_TAG="${{ steps.prev_tag.outputs.prev_tag }}"
 
-          echo "" >> release_notes.md
-          echo "### 🎉 새로운 기능 및 개선사항" >> release_notes.md
-          echo "" >> release_notes.md
-
           # 이전 태그가 있으면 그 사이의 커밋들을 분석
           if [ -n "$PREV_TAG" ]; then
             echo "#### 📝 변경 사항 ($PREV_TAG → $TAG_NAME)" >> release_notes.md
