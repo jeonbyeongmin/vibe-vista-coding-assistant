@@ -40,19 +40,31 @@ export class NewsScheduler {
   startScheduler() {
     console.log('📰 뉴스 스케줄러 시작...');
 
-    // 매일 오전 9시에 개발 뉴스 전송
-    cron.schedule('0 9 * * *', async () => {
-      console.log('📅 일일 뉴스 전송 시작...');
-      await this.sendDailyNews();
-    });
+    // 매일 한국 시간 오전 9시에 개발 뉴스 전송
+    cron.schedule(
+      '0 9 * * *',
+      async () => {
+        console.log('📅 일일 뉴스 전송 시작...');
+        await this.sendDailyNews();
+      },
+      {
+        timezone: 'Asia/Seoul',
+      }
+    );
 
-    // 매주 월요일 오전 10시에 주간 트렌드 전송
-    cron.schedule('0 10 * * 1', async () => {
-      console.log('📊 주간 트렌드 전송 시작...');
-      await this.sendWeeklyTrends();
-    });
+    // 매주 월요일 한국 시간 오전 10시에 주간 트렌드 전송
+    cron.schedule(
+      '0 10 * * 1',
+      async () => {
+        console.log('📊 주간 트렌드 전송 시작...');
+        await this.sendWeeklyTrends();
+      },
+      {
+        timezone: 'Asia/Seoul',
+      }
+    );
 
-    console.log('✅ 뉴스 스케줄러가 활성화되었습니다!');
+    console.log('✅ 뉴스 스케줄러가 활성화되었습니다! (한국 시간 기준)');
   }
 
   async sendDailyNews() {
