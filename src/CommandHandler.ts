@@ -84,7 +84,7 @@ export class CommandHandler {
         });
 
         await this.newsScheduler.sendDailyNews();
-        
+
         await interaction.editReply({
           content: '✅ 일일 뉴스 테스트가 완료되었습니다! 설정된 뉴스 채널을 확인해보세요.',
         });
@@ -95,7 +95,7 @@ export class CommandHandler {
         });
 
         await this.newsScheduler.sendWeeklyTrends();
-        
+
         await interaction.editReply({
           content: '✅ 주간 트렌드 테스트가 완료되었습니다! 설정된 뉴스 채널을 확인해보세요.',
         });
