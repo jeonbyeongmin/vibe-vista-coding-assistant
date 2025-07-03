@@ -48,6 +48,9 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     case 'setnews':
       await commandHandler.handleNewsSetupCommand(interaction);
       break;
+    case 'testnews':
+      await commandHandler.handleNewsTestCommand(interaction);
+      break;
     default:
       console.log(`알 수 없는 명령어: ${commandName}`);
   }

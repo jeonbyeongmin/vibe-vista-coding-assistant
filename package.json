@@ -18,7 +18,7 @@
     "format": "prettier --write src/**/*.ts",
     "test": "./test.sh",
     "test:features": "./test-features.sh",
-    "test:news": "node -e \"const ns = require('./dist/newsScheduler'); console.log('뉴스 기능 테스트 완료')\"",
+    "test:news": "npm run build && node -e \"console.log('뉴스 기능을 테스트하려면 Discord에서 /testnews 명령어를 사용하세요!')\"",
     "test:build": "npm run build && npm run test:features",
     "test:local": "npm run start:testbot",
     "test:all": "npm run test:features && npm run test:local",

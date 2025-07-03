@@ -45,5 +45,18 @@ export const newsSetupCommand = new SlashCommandBuilder()
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels);
 
+// 뉴스 테스트 명령어
+export const newsTestCommand = new SlashCommandBuilder()
+  .setName('testnews')
+  .setDescription('개발 뉴스를 즉시 테스트해봅니다')
+  .addStringOption((option) =>
+    option
+      .setName('타입')
+      .setDescription('테스트할 뉴스 타입을 선택하세요')
+      .setRequired(false)
+      .addChoices({ name: '일일 뉴스', value: 'daily' }, { name: '주간 트렌드', value: 'weekly' })
+  )
+  .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels);
+
 // 모든 명령어를 배열로 내보내기
-export const allCommands = [vibeIdeaCommand, newsSetupCommand];
+export const allCommands = [vibeIdeaCommand, newsSetupCommand, newsTestCommand];

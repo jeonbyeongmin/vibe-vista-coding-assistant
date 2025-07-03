@@ -69,4 +69,39 @@ export class CommandHandler {
       await handleInteractionError(interaction, '❌ 뉴스 채널 설정 중 오류가 발생했습니다.', error);
     }
   }
+
+  async handleNewsTestCommand(interaction: ChatInputCommandInteraction): Promise<void> {
+    try {
+      // 즉시 응답 처리
+      await interaction.deferReply();
+
+      const type = interaction.options.getString('타입') || 'daily';
+
+      if (type === 'daily') {
+        console.log('🧪 일일 뉴스 테스트 시작...');
+        await interaction.editReply({
+          content: '📰 일일 뉴스를 가져오는 중입니다... 잠시만 기다려주세요!',
+        });
+
+        await this.newsScheduler.sendDailyNews();
+        
+        await interaction.editReply({
+          content: '✅ 일일 뉴스 테스트가 완료되었습니다! 설정된 뉴스 채널을 확인해보세요.',
+        });
+      } else if (type === 'weekly') {
+        console.log('🧪 주간 트렌드 테스트 시작...');
+        await interaction.editReply({
+          content: '📈 주간 트렌드를 가져오는 중입니다... 잠시만 기다려주세요!',
+        });
+
+        await this.newsScheduler.sendWeeklyTrends();
+        
+        await interaction.editReply({
+          content: '✅ 주간 트렌드 테스트가 완료되었습니다! 설정된 뉴스 채널을 확인해보세요.',
+        });
+      }
+    } catch (error) {
+      await handleInteractionError(interaction, '❌ 뉴스 테스트 중 오류가 발생했습니다.', error);
+    }
+  }
 }

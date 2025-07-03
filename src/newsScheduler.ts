@@ -103,18 +103,43 @@ export class NewsScheduler {
 
   private async fetchDeveloperNews(): Promise<NewsArticle[]> {
     try {
-      console.log('📡 Dev.to에서 뉴스 가져오는 중...');
+      console.log('📡 Hacker News에서 뉴스 가져오는 중...');
 
-      const response = await axios.get('https://dev.to/api/articles', {
-        params: {
-          top: 7,
-          per_page: 5,
-        },
-        timeout: 10000,
-      });
+      // 최고 인기 스토리 ID 가져오기
+      const topStoriesResponse = await axios.get(
+        'https://hacker-news.firebaseio.com/v0/topstories.json',
+        { timeout: 10000 }
+      );
 
-      console.log(`✅ ${response.data.length}개의 뉴스 기사를 가져왔습니다.`);
-      return response.data;
+      const topStoryIds = topStoriesResponse.data.slice(0, 5);
+      const articles: NewsArticle[] = [];
+
+      for (const id of topStoryIds) {
+        try {
+          const storyResponse = await axios.get(
+            `https://hacker-news.firebaseio.com/v0/item/${id}.json`,
+            { timeout: 5000 }
+          );
+
+          const story = storyResponse.data;
+          if (story && story.url && story.title) {
+            articles.push({
+              title: story.title,
+              description: story.text || '설명 없음',
+              url: story.url,
+              user: { name: story.by || 'Anonymous' },
+              public_reactions_count: story.score || 0,
+              published_at: new Date(story.time * 1000).toISOString(),
+              tag_list: ['hackernews'],
+            });
+          }
+        } catch (error) {
+          console.error(`❌ Hacker News 스토리 ${id} 가져오기 실패:`, error);
+        }
+      }
+
+      console.log(`✅ ${articles.length}개의 뉴스 기사를 가져왔습니다.`);
+      return articles;
     } catch (error) {
       console.error('❌ 뉴스 가져오기 실패:', error);
       return [];
@@ -190,7 +215,7 @@ export class NewsScheduler {
 
     embed.addFields({
       name: '💡 더 많은 개발 소식',
-      value: '더 많은 개발 뉴스는 [Dev.to](https://dev.to)에서 확인하세요!',
+      value: '더 많은 개발 뉴스는 [Hacker News](https://news.ycombinator.com)에서 확인하세요!',
       inline: false,
     });
 
