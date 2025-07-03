@@ -8,8 +8,6 @@
     "dev:test": "NODE_ENV=test tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "start:dev": "NODE_ENV=development node dist/index.js",
-    "start:test": "npm run build && NODE_ENV=development node dist/index.js",
     "start:testbot": "npm run build && node -r dotenv/config dist/index.js dotenv_config_path=.env.test",
     "stop": "pkill -f 'node dist/index.js' || echo 'No running bot found'",
     "restart": "npm run stop && sleep 1 && npm run start:test",
