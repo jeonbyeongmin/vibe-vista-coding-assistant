@@ -1,14 +1,19 @@
-import { ChatInputCommandInteraction, ChannelType } from 'discord.js';
+import { ChatInputCommandInteraction, ChannelType, ButtonInteraction } from 'discord.js';
 import { AIService } from './AIService';
 import { NewsScheduler } from './newsScheduler';
+import { QuizService } from './QuizService';
 import { handleInteractionError } from './types';
 import console from 'console';
 
 export class CommandHandler {
+  private quizService: QuizService;
+
   constructor(
     private aiService: AIService,
     private newsScheduler: NewsScheduler
-  ) {}
+  ) {
+    this.quizService = new QuizService(aiService);
+  }
 
   async handleVibeIdeaCommand(interaction: ChatInputCommandInteraction): Promise<void> {
     try {
@@ -102,6 +107,18 @@ export class CommandHandler {
       }
     } catch (error) {
       await handleInteractionError(interaction, '❌ 뉴스 테스트 중 오류가 발생했습니다.', error);
+    }
+  }
+
+  async handleQuizCommand(interaction: ChatInputCommandInteraction): Promise<void> {
+    await this.quizService.createQuiz(interaction);
+  }
+
+  async handleQuizButtonInteraction(interaction: ButtonInteraction): Promise<void> {
+    if (interaction.customId.startsWith('quiz_answer_')) {
+      await this.quizService.handleQuizAnswer(interaction);
+    } else if (interaction.customId.startsWith('quiz_stats_')) {
+      await this.quizService.handleQuizStats(interaction);
     }
   }
 }

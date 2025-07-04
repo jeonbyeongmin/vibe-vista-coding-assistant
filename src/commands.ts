@@ -58,5 +58,41 @@ export const newsTestCommand = new SlashCommandBuilder()
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels);
 
+// 퀴즈 명령어
+export const quizCommand = new SlashCommandBuilder()
+  .setName('quiz')
+  .setDescription('개발 관련 퀴즈를 시작합니다')
+  .addStringOption((option: SlashCommandStringOption) =>
+    option
+      .setName('분야')
+      .setDescription('퀴즈 분야를 선택하세요')
+      .setRequired(false)
+      .addChoices(
+        { name: 'JavaScript', value: 'javascript' },
+        { name: 'Python', value: 'python' },
+        { name: 'React', value: 'react' },
+        { name: 'Node.js', value: 'nodejs' },
+        { name: 'TypeScript', value: 'typescript' },
+        { name: '알고리즘', value: 'algorithm' },
+        { name: '웹 개발', value: 'web' },
+        { name: 'Git', value: 'git' },
+        { name: '데이터베이스', value: 'database' },
+        { name: '개발 상식', value: 'general' },
+        { name: '랜덤', value: 'random' }
+      )
+  )
+  .addStringOption((option: SlashCommandStringOption) =>
+    option
+      .setName('난이도')
+      .setDescription('퀴즈 난이도를 선택하세요')
+      .setRequired(false)
+      .addChoices(
+        { name: '쉬움', value: 'easy' },
+        { name: '중간', value: 'medium' },
+        { name: '어려움', value: 'hard' },
+        { name: '랜덤', value: 'random' }
+      )
+  );
+
 // 모든 명령어를 배열로 내보내기
-export const allCommands = [vibeIdeaCommand, newsSetupCommand, newsTestCommand];
+export const allCommands = [vibeIdeaCommand, newsSetupCommand, newsTestCommand, quizCommand];

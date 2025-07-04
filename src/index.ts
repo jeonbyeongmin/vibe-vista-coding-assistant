@@ -37,22 +37,33 @@ client.once('ready', async () => {
 
 // 슬래시 명령어 처리
 client.on('interactionCreate', async (interaction: Interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+  // 슬래시 명령어 처리
+  if (interaction.isChatInputCommand()) {
+    const { commandName } = interaction;
 
-  const { commandName } = interaction;
+    switch (commandName) {
+      case 'vibeidea':
+        await commandHandler.handleVibeIdeaCommand(interaction);
+        break;
+      case 'setnews':
+        await commandHandler.handleNewsSetupCommand(interaction);
+        break;
+      case 'testnews':
+        await commandHandler.handleNewsTestCommand(interaction);
+        break;
+      case 'quiz':
+        await commandHandler.handleQuizCommand(interaction);
+        break;
+      default:
+        console.log(`알 수 없는 명령어: ${commandName}`);
+    }
+  }
 
-  switch (commandName) {
-    case 'vibeidea':
-      await commandHandler.handleVibeIdeaCommand(interaction);
-      break;
-    case 'setnews':
-      await commandHandler.handleNewsSetupCommand(interaction);
-      break;
-    case 'testnews':
-      await commandHandler.handleNewsTestCommand(interaction);
-      break;
-    default:
-      console.log(`알 수 없는 명령어: ${commandName}`);
+  // 버튼 상호작용 처리
+  if (interaction.isButton()) {
+    if (interaction.customId.startsWith('quiz_')) {
+      await commandHandler.handleQuizButtonInteraction(interaction);
+    }
   }
 });
 
