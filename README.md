@@ -53,8 +53,12 @@
 ```
 /quiz [분야] [난이도]
 ```
-
 개발 관련 퀴즈를 시작합니다.
+
+<img width="500" alt="스크린샷 2025-07-04 23 17 35" src="https://github.com/user-attachments/assets/49af921c-d7e6-4e69-a1f1-cab6b805807f" />
+<img width="500" alt="스크린샷 2025-07-04 23 17 43" src="https://github.com/user-attachments/assets/af392ece-3ae8-4389-8176-d66f46ef354f" />
+
+
 
 #### 매개변수
 
@@ -82,7 +86,7 @@
 - **플랫폼**: Discord.js
 - **AI**: Google Gemini API
 - **스케줄링**: node-cron
-- **데이터 소스**: Dev.to API, GitHub API
+- **데이터 소스**: Hacker News API, GitHub API
 
 ## 📝 라이센스
 
