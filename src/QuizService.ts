@@ -68,6 +68,9 @@ export class QuizService {
     - 해설은 왜 그것이 정답인지 자세히 설명
     - 실제 개발에 도움되는 내용으로 구성
     - 한국어로 작성
+    - 코드가 포함될 경우 반드시 인라인 코드(백틱 1개)만 사용
+    - 코드블럭(백틱 3개) 사용 금지
+    - 예시: console.log() → \`console.log()\`
     `;
 
     try {
@@ -91,6 +94,11 @@ export class QuizService {
       ) {
         throw new Error('Invalid quiz data format');
       }
+
+      // 질문과 선택지에서 문제가 될 수 있는 코드블럭 패턴 정리
+      quizData.question = this.sanitizeCodeBlocks(quizData.question);
+      quizData.options = quizData.options.map((option: string) => this.sanitizeCodeBlocks(option));
+      quizData.explanation = this.sanitizeCodeBlocks(quizData.explanation);
 
       return quizData;
     } catch (error) {
@@ -448,5 +456,26 @@ export class QuizService {
       ...quiz,
       difficulty: difficulty,
     };
+  }
+
+  private sanitizeCodeBlocks(text: string): string {
+    if (!text) return text;
+
+    // 코드블럭(```) 을 인라인 코드(`)로 변환
+    let sanitized = text.replace(/```[\s\S]*?```/g, (match) => {
+      // 코드블럭 내용만 추출
+      const code = match.replace(/```\w*\n?|\n?```/g, '').trim();
+      // 인라인 코드로 변환
+      return `\`${code}\``;
+    });
+
+    // 연속된 백틱들 정리
+    sanitized = sanitized.replace(/`{2,}/g, '`');
+
+    // Discord에서 문제가 될 수 있는 특수 문자들 처리
+    sanitized = sanitized.replace(/\*{2,}/g, '**'); // 연속된 * 정리
+    sanitized = sanitized.replace(/_{2,}/g, '__'); // 연속된 _ 정리
+
+    return sanitized;
   }
 }
