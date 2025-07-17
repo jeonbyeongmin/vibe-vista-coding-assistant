@@ -176,6 +176,54 @@ export class AIService {
     throw new Error('모든 AI 모델에서 퀴즈 생성에 실패했습니다.');
   }
 
+  async generateContent(prompt: string): Promise<string> {
+    console.log('🤖 AI 컨텐츠 생성 요청');
+    console.log(`📝 사용할 모델 순서: ${this.modelNames.join(' → ')}`);
+
+    // 각 모델을 순서대로 시도
+    for (let i = 0; i < this.models.length; i++) {
+      const model = this.models[i];
+      const modelName = this.modelNames[i];
+
+      try {
+        console.log(`🤖 ${modelName} 모델로 컨텐츠 생성 중...`);
+
+        // 타임아웃과 함께 API 호출
+        const result = await Promise.race([
+          model.generateContent(prompt),
+          createTimeoutPromise(TIMEOUT_MS),
+        ]);
+
+        const response = await result.response;
+        const content = response.text();
+
+        console.log(`✅ ${modelName} 모델로 컨텐츠 생성 완료!`);
+        return content;
+      } catch (error) {
+        console.error(`❌ ${modelName} 모델 오류:`, error);
+
+        // 타임아웃 처리
+        if (error instanceof Error && error.message === 'Timeout') {
+          console.log(`⏰ ${modelName} 모델 시간 초과`);
+        }
+
+        // API 특정 에러 처리
+        if (error && typeof error === 'object' && 'status' in error) {
+          const status = (error as { status: number }).status;
+          console.log(getStatusMessage(status, modelName));
+        }
+
+        // 마지막 모델이 아니면 다음 모델로 계속
+        if (i < this.models.length - 1) {
+          console.log(`🔄 다음 모델로 재시도: ${this.modelNames[i + 1]}`);
+          continue;
+        }
+      }
+    }
+
+    throw new Error('모든 AI 모델에서 컨텐츠 생성에 실패했습니다.');
+  }
+
   private getErrorMessage(): string {
     return `🤖 죄송합니다! 현재 AI 서비스에 일시적인 문제가 발생했습니다.
 

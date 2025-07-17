@@ -4,7 +4,7 @@ import {
   ChannelType,
   PermissionFlagsBits,
 } from 'discord.js';
-import { DIFFICULTY_CHOICES, FIELD_CHOICES, TIME_LIMIT_CHOICES } from './constants';
+import { DIFFICULTY_CHOICES, FIELD_CHOICES, TIME_LIMIT_CHOICES, JOKE_CATEGORIES } from './constants';
 
 // VibeIdea 명령어
 export const vibeIdeaCommand = new SlashCommandBuilder()
@@ -94,5 +94,17 @@ export const quizCommand = new SlashCommandBuilder()
       )
   );
 
+// 프로그래밍 농담 명령어
+export const jokeCommand = new SlashCommandBuilder()
+  .setName('joke')
+  .setDescription('재미있는 프로그래밍 농담을 들려줍니다')
+  .addStringOption((option: SlashCommandStringOption) =>
+    option
+      .setName('분야')
+      .setDescription('농담 분야를 선택하세요')
+      .setRequired(false)
+      .addChoices(...JOKE_CATEGORIES)
+  );
+
 // 모든 명령어를 배열로 내보내기
-export const allCommands = [vibeIdeaCommand, newsSetupCommand, newsTestCommand, quizCommand];
+export const allCommands = [vibeIdeaCommand, newsSetupCommand, newsTestCommand, quizCommand, jokeCommand];
