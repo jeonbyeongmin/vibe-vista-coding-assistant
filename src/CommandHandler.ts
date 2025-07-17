@@ -2,17 +2,20 @@ import { ChatInputCommandInteraction, ChannelType, ButtonInteraction } from 'dis
 import { AIService } from './AIService';
 import { NewsScheduler } from './newsScheduler';
 import { QuizService } from './QuizService';
+import { JokeService } from './JokeService';
 import { handleInteractionError } from './types';
 import console from 'console';
 
 export class CommandHandler {
   private quizService: QuizService;
+  private jokeService: JokeService;
 
   constructor(
     private aiService: AIService,
     private newsScheduler: NewsScheduler
   ) {
     this.quizService = new QuizService(aiService);
+    this.jokeService = new JokeService(aiService);
   }
 
   async handleVibeIdeaCommand(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -119,6 +122,39 @@ export class CommandHandler {
       await this.quizService.handleQuizAnswer(interaction);
     } else if (interaction.customId.startsWith('quiz_stats_')) {
       await this.quizService.handleQuizStats(interaction);
+    }
+  }
+
+  async handleJokeCommand(interaction: ChatInputCommandInteraction): Promise<void> {
+    try {
+      // interaction이 유효한지 확인
+      if (!interaction.isRepliable()) {
+        console.log('⚠️ Interaction이 응답 불가능한 상태입니다.');
+        return;
+      }
+
+      // 즉시 응답하여 시간 초과 방지
+      await interaction.deferReply();
+
+      const category = interaction.options.getString('분야') || 'random';
+
+      console.log(`😄 농담 요청: 분야=${category}`);
+
+      // 농담 생성
+      const joke = await this.jokeService.getJoke(category);
+
+      // 응답 업데이트
+      await interaction.editReply({
+        content: `😄 **프로그래밍 농담**\n\n${joke}`,
+      });
+
+      console.log('✅ 농담 응답 완료');
+    } catch (error) {
+      await handleInteractionError(
+        interaction,
+        '❌ 농담을 가져오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        error
+      );
     }
   }
 }

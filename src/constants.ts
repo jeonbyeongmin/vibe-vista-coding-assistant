@@ -42,3 +42,15 @@ export const TIME_LIMIT_CHOICES = [
   { name: '3시간', value: '3h' },
   { name: '상관없음', value: '상관없음' },
 ] as const;
+
+export const JOKE_CATEGORIES = [
+  { name: '일반', value: 'general' },
+  { name: 'JavaScript', value: 'javascript' },
+  { name: 'Python', value: 'python' },
+  { name: '프론트엔드', value: 'frontend' },
+  { name: '백엔드', value: 'backend' },
+  { name: 'Git', value: 'git' },
+  { name: '버그', value: 'bugs' },
+  { name: 'AI/ML', value: 'ai' },
+  { name: '랜덤', value: 'random' },
+] as const;

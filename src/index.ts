@@ -54,6 +54,9 @@ client.on('interactionCreate', async (interaction: Interaction) => {
       case 'quiz':
         await commandHandler.handleQuizCommand(interaction);
         break;
+      case 'joke':
+        await commandHandler.handleJokeCommand(interaction);
+        break;
       default:
         console.log(`알 수 없는 명령어: ${commandName}`);
     }
